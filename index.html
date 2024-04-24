@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Student Information</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
+</head>
+<body>
+    <div>
+        <button onclick="filterByPosition('All')">All</button>
+        <button onclick="filterByPosition('Undergraduate student')">Undergraduate student</button>
+        <button onclick="filterByPosition('Postgraduate student')">Postgraduate student</button>
+        <button onclick="filterByPosition('PhD student')">PhD Student</button>
+    </div>
+    <div id="studentContainer"></div>
+    <script>
+        var googleSheetsURL = 'google sheet url'; // Replace with your Google Sheets URL
+        var studentData = []; // Global variable to store student data
+
+        Papa.parse(googleSheetsURL, {
+            download: true,
+            header: true,
+            complete: function (results) {
+                if (results.data && results.data.length > 0) {
+                    console.log('Student Data:', results.data); // Log data to console
+                    studentData = results.data; // Store data in global variable
+                    displayStudentInformation(studentData, 'All'); // Display all students initially
+                } else {
+                    console.error('No data found in Google Sheets.');
+                }
+            }
+        });
+
+        // Function to display student information based on position filter
+        function displayStudentInformation(studentData, positionFilter) {
+            var container = document.getElementById('studentContainer');
+            container.innerHTML = ''; // Clear previous content
+
+            studentData.forEach(function (student) {
+                if (positionFilter === 'All' ||
+                    (positionFilter === 'Undergraduate student' && student.Position.toLowerCase().includes('undergraduate')) ||
+                    (positionFilter === 'Postgraduate student' && student.Position.toLowerCase().includes('postgraduate')) ||
+                    (positionFilter === 'PhD student' && student.Position.toLowerCase().includes('phd'))) {
+                    var studentDiv = document.createElement('div');
+                    studentDiv.classList.add('student');
+                    studentDiv.innerHTML = `
+                        <h3>${student.Name || 'Unknown'}</h3>
+                        <p>Position: ${student.Position || 'Unknown'}</p>
+                        <p>Department: ${student['Department / Center / School'] || 'Unknown'}</p>
+                    `;
+                    container.appendChild(studentDiv);
+                }
+            });
+        }
+
+        // Function to filter students by position
+        function filterByPosition(positionFilter) {
+            displayStudentInformation(studentData, positionFilter);
+        }
+    </script>
+</body>
+</html>
